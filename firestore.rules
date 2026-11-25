@@ -28,6 +28,11 @@ service cloud.firestore {
 
       // Admin: read + delete
       allow read, delete: if isAdmin();
+
+      // Admin: move a response to the other day (only the "event" field may change)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['event'])
+        && request.resource.data.event in ['day1', 'day2'];
     }
 
     match /{document=**} {

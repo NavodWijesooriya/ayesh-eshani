@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, deleteDoc, doc, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db, RSVPS } from "@/lib/firebase";
 
@@ -18,6 +18,7 @@ export default function Admin() {
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [inviteName, setInviteName] = useState("");
+  const [inviteDay, setInviteDay] = useState("day1");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => onAuthStateChanged(auth, setUser), []);
@@ -47,6 +48,17 @@ export default function Admin() {
   const del = async (id) => {
     if (!confirm("Delete this response permanently?")) return;
     try { await deleteDoc(doc(db, RSVPS, id)); load(); } catch (e) { setErr(e.message); }
+  };
+
+  const moveDay = async (r, to) => {
+    if (to === r.event) return;
+    if (!confirm(`Move "${r.name}" to ${LABEL[to]}?`)) return;
+    try {
+      await updateDoc(doc(db, RSVPS, r.id), { event: to });
+      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, event: to } : x)));
+    } catch (e) {
+      setErr(e.code === "permission-denied" ? "Not allowed to change the day — publish the latest firestore.rules in Firebase." : e.message);
+    }
   };
 
   const stats = useMemo(() => {
@@ -79,9 +91,9 @@ export default function Admin() {
   };
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const inviteUrl = `${origin}/${tab}${inviteName.trim() ? `?to=${encodeURIComponent(inviteName.trim())}` : ""}`;
+  const inviteUrl = `${origin}/${inviteDay}${inviteName.trim() ? `?to=${encodeURIComponent(inviteName.trim())}` : ""}`;
   const waText = encodeURIComponent(
-    `${inviteName.trim() ? `Dear ${inviteName.trim()},\n` : ""}With joy we invite you to our wedding ${tab === "day1" ? "on Saturday, 09 January 2027" : "celebration on Sunday, 10 January 2027"} 💍\nPlease open your invitation & RSVP here:\n${inviteUrl}\n\n— Ayesh & Eshani`
+    `${inviteName.trim() ? `Dear ${inviteName.trim()},\n` : ""}With joy we invite you to our wedding ${inviteDay === "day1" ? "on Saturday, 09 January 2027" : "celebration on Sunday, 10 January 2027"} 💍\nPlease open your invitation & RSVP here:\n${inviteUrl}\n\n— Ayesh & Eshani`
   );
 
   if (user === undefined) return <main className="admin login-wrap"><p className="a-sub">Loading…</p></main>;
@@ -161,12 +173,18 @@ export default function Admin() {
       <div className="table-wrap">
         <table>
           <thead>
-            <tr><th>Name</th><th>Status</th><th>Guests</th><th>Phone</th><th>Message</th><th>Received</th><th></th></tr>
+            <tr><th>Name</th><th>Day</th><th>Status</th><th>Guests</th><th>Phone</th><th>Message</th><th>Received</th><th></th></tr>
           </thead>
           <tbody>
             {list.map((r) => (
               <tr key={r.id}>
                 <td data-l="Name"><b>{r.name}</b></td>
+                <td data-l="Day">
+                  <select className="day-sel" value={r.event} onChange={(e) => moveDay(r, e.target.value)}>
+                    <option value="day1">Day 1 · 09 Jan</option>
+                    <option value="day2">Day 2 · 10 Jan</option>
+                  </select>
+                </td>
                 <td data-l="Status"><span className={`badge ${r.attending ? "yes" : "no"}`}>{r.attending ? "Attending" : "Declined"}</span></td>
                 <td data-l="Guests">{r.attending ? r.guests : "—"}</td>
                 <td data-l="Phone">{r.phone ? <a href={`tel:${r.phone}`}>{r.phone}</a> : "—"}</td>
@@ -176,7 +194,7 @@ export default function Admin() {
               </tr>
             ))}
             {!list.length && (
-              <tr><td colSpan={7} className="empty">{loading ? "Loading…" : "No responses yet."}</td></tr>
+              <tr><td colSpan={8} className="empty">{loading ? "Loading…" : "No responses yet."}</td></tr>
             )}
           </tbody>
         </table>
@@ -184,7 +202,15 @@ export default function Admin() {
 
       <section className="invite-gen">
         <h2>Personal invite link</h2>
-        <p>Type a guest's name — the invitation will greet them by name. ({LABEL[tab]})</p>
+        <p>Choose the day, type the guest's name — the invitation will greet them by name.</p>
+        <div className="day-pick">
+          {["day1", "day2"].map((d) => (
+            <button key={d} type="button" className={inviteDay === d ? "on" : ""} onClick={() => setInviteDay(d)}>
+              <b>{d === "day1" ? "Day 1" : "Day 2"}</b>
+              <small>{d === "day1" ? "Church · Sat 09 Jan" : "Celebration · Sun 10 Jan"}</small>
+            </button>
+          ))}
+        </div>
         <div className="toolbar">
           <input placeholder="e.g. Mr. & Mrs. Perera" value={inviteName} onChange={(e) => setInviteName(e.target.value)} />
         </div>
