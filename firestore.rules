@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 👉 Change this to the email of the admin user you create in Firebase Authentication
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in ['admin@example.com'];
+    }
+
+    function optStr(v, max) {
+      return v == null || (v is string && v.size() <= max);
+    }
+
+    match /rsvps/{id} {
+      // Guests: may only ADD a well-formed RSVP. They can never read, edit or delete.
+      allow create: if request.resource.data.keys().hasOnly(['event','name','phone','attending','guests','message','created_at'])
+        && request.resource.data.event in ['day1', 'day2']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+        && request.resource.data.attending is bool
+        && request.resource.data.guests is int
+        && request.resource.data.guests >= 0 && request.resource.data.guests <= 10
+        && optStr(request.resource.data.phone, 20)
+        && optStr(request.resource.data.message, 500)
+        && request.resource.data.created_at == request.time;
+
+      // Admin: read + delete
+      allow read, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
