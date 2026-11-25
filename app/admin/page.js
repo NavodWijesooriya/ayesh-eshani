@@ -90,7 +90,11 @@ export default function Admin() {
     const a = document.createElement("a"); a.href = url; a.download = `rsvps-${tab}.csv`; a.click();
   };
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // invite links always point to the public wedding site, even when the admin panel is on its own domain
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ayesh-eshani-wedding.vercel.app";
+  const origin =
+    typeof window === "undefined" ? "" :
+    ["localhost", "127.0.0.1"].includes(window.location.hostname) ? window.location.origin : SITE_URL;
   const inviteUrl = `${origin}/${inviteDay}${inviteName.trim() ? `?to=${encodeURIComponent(inviteName.trim())}` : ""}`;
   const waText = encodeURIComponent(
     `${inviteName.trim() ? `Dear ${inviteName.trim()},\n` : ""}With joy we invite you to our wedding ${inviteDay === "day1" ? "on Saturday, 09 January 2027" : "celebration on Sunday, 10 January 2027"} 💍\nPlease open your invitation & RSVP here:\n${inviteUrl}\n\n— Ayesh & Eshani`
