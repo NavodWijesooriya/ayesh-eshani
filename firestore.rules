@@ -6,7 +6,7 @@ service cloud.firestore {
     // 👉 Change this to the email of the admin user you create in Firebase Authentication
     function isAdmin() {
       return request.auth != null
-        && request.auth.token.email in ['admin@example.com'];
+        && request.auth.token.email in ['admin@gmail.com'];
     }
 
     function optStr(v, max) {
