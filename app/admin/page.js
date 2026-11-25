@@ -84,18 +84,18 @@ export default function Admin() {
     `${inviteName.trim() ? `Dear ${inviteName.trim()},\n` : ""}With joy we invite you to our wedding ${tab === "day1" ? "on Saturday, 09 January 2027" : "celebration on Sunday, 10 January 2027"} 💍\nPlease open your invitation & RSVP here:\n${inviteUrl}\n\n— Ayesh & Eshani`
   );
 
-  if (user === undefined) return <main className="admin login-wrap"><p className="caps small">Loading…</p></main>;
+  if (user === undefined) return <main className="admin login-wrap"><p className="a-sub">Loading…</p></main>;
 
   if (!user) {
     return (
       <main className="admin login-wrap">
         <form className="login" onSubmit={login}>
-          <p className="script gold-text big">Ayesh & Eshani</p>
-          <p className="caps small">RSVP Admin</p>
+          <h1 className="a-title">RSVP Admin</h1>
+          <p className="a-sub">Ayesh & Eshani</p>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Admin email" autoFocus />
           <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="Password" />
           {err && <p className="form-err">{err}</p>}
-          <button className="btn wide">Sign in</button>
+          <button className="primary">Sign in</button>
         </form>
       </main>
     );
@@ -104,12 +104,15 @@ export default function Admin() {
   return (
     <main className="admin">
       <header className="a-head">
-        <div>
-          <p className="script gold-text">Ayesh & Eshani</p>
-          <h1>RSVP Dashboard</h1>
+        <div className="a-brand">
+          <span className="a-logo">A&E</span>
+          <div>
+            <h1>RSVP Dashboard</h1>
+            <p className="a-sub">Ayesh & Eshani · Wedding 2027</p>
+          </div>
         </div>
         <div className="a-head-btns">
-          <button onClick={() => load()} disabled={loading}>{loading ? "Loading…" : "↻ Refresh"}</button>
+          <button onClick={() => load()} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
           <button onClick={() => { signOut(auth); setRows([]); }}>Sign out</button>
         </div>
       </header>
@@ -117,16 +120,30 @@ export default function Admin() {
       <div className="tabs">
         {["day1", "day2"].map((d) => (
           <button key={d} className={tab === d ? "on" : ""} onClick={() => setTab(d)}>
-            {LABEL[d]} <span>{stats[d].total}</span>
+            <em className="t-full">{LABEL[d]}</em>
+            <em className="t-short">{d === "day1" ? "Day 1 · 09 Jan" : "Day 2 · 10 Jan"}</em>
+            <span>{stats[d].total}</span>
           </button>
         ))}
       </div>
 
       <div className="stat-grid">
-        <div className="stat"><small>Responses</small><b>{stats[tab].total}</b></div>
-        <div className="stat good"><small>Attending</small><b>{stats[tab].yes}</b></div>
-        <div className="stat"><small>Total guests coming</small><b>{stats[tab].guests}</b></div>
-        <div className="stat bad"><small>Declined</small><b>{stats[tab].no}</b></div>
+        <div className="stat">
+          <span className="s-ico"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H5.2L4 17.2z" /></svg></span>
+          <small>Responses</small><b>{stats[tab].total}</b>
+        </div>
+        <div className="stat">
+          <span className="s-ico"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span>
+          <small>Attending</small><b>{stats[tab].yes}</b>
+        </div>
+        <div className="stat feature">
+          <span className="s-ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" /><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" /><circle cx="17" cy="9" r="2.4" /><path d="M16 13.6c2.9 0 5 1.9 5 4.9" /></svg></span>
+          <small>Total guests coming</small><b>{stats[tab].guests}</b>
+        </div>
+        <div className="stat">
+          <span className="s-ico"><svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" /></svg></span>
+          <small>Declined</small><b>{stats[tab].no}</b>
+        </div>
       </div>
 
       {err && <p className="form-err">{err}</p>}
@@ -138,7 +155,7 @@ export default function Admin() {
           <option value="yes">Attending</option>
           <option value="no">Declined</option>
         </select>
-        <button onClick={exportCsv}>⬇ Export CSV</button>
+        <button onClick={exportCsv}>Export CSV</button>
       </div>
 
       <div className="table-wrap">
@@ -174,9 +191,9 @@ export default function Admin() {
         <code className="link-out">{inviteUrl}</code>
         <div className="a-head-btns">
           <button onClick={() => { navigator.clipboard?.writeText(inviteUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>
-            {copied ? "✓ Copied" : "Copy link"}
+            {copied ? "Copied" : "Copy link"}
           </button>
-          <a className="wa" href={`https://wa.me/?text=${waText}`} target="_blank" rel="noreferrer">Share on WhatsApp</a>
+          <a className="primary" href={`https://wa.me/?text=${waText}`} target="_blank" rel="noreferrer">Share on WhatsApp</a>
           <a href={inviteUrl} target="_blank" rel="noreferrer">Preview</a>
         </div>
       </section>

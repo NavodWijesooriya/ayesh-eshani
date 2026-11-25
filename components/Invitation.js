@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Wreath, Sprig, Divider } from "./Ornaments";
+import { Wreath, Divider } from "./Ornaments";
 import Countdown from "./Countdown";
 import RsvpForm from "./RsvpForm";
 import { toIntl } from "@/lib/events";
@@ -110,30 +110,35 @@ export default function Invitation({ ev }) {
 
       {/* ===== Hero ===== */}
       <header id="top" className="hero">
-        <Sprig className="sprig-left" />
-        <Sprig className="sprig-right" flip />
-        <div className="hero-card">
-          <div className="gold-icon"><Wreath size={120} /></div>
+        <div className="hero-blur" style={{ backgroundImage: "url(/hero.jpg)" }} />
+        <div className="hero-bg" style={{ backgroundImage: "url(/hero.jpg)" }} />
+        <div className="hero-shade" />
+        <div className="hero-top">
           {guest && <p className="dear">Dear {guest},</p>}
           <p className="eyebrow">{ev.eyebrow}</p>
           <h1 className="names">
-            <span className="script gold-text">{ev.first.name}</span>
-            <span className="amp gold-text">&</span>
-            <span className="script gold-text">{ev.second.name}</span>
+            <span className="script">{ev.first.name}</span>
+            <span className="amp">&</span>
+            <span className="script">{ev.second.name}</span>
           </h1>
-          <p className="kind">{ev.kind}</p>
+          <p className="tagline">Save the Date · A Promise of Love & Faith</p>
+        </div>
+        <div className="hero-bottom">
           <div className="date-row">
             <span className="date-side">{ev.weekday}</span>
             <span className="date-mid">
               <small>{ev.month}</small>
-              <b className="gold-text">{ev.day}</b>
+              <b>{ev.day}</b>
             </span>
             <span className="date-side">{ev.year}</span>
           </div>
-          <p className="hero-time">{ev.timeLabel}</p>
-          <a href="#rsvp" className="btn">Kindly RSVP</a>
+          <p className="hero-time">{ev.kind} · {ev.timeLabel}</p>
+          <div className="hero-btns">
+            <a href="#details" className="btn">View Details</a>
+            <a href="#rsvp" className="btn ghost light">RSVP</a>
+          </div>
         </div>
-        <a href="#details" className="scroll-cue" aria-label="Scroll"><span /></a>
+        <a href="#details" className="scroll-cue" aria-label="Scroll"><span /><em>Scroll</em></a>
       </header>
 
       {/* ===== Invitation wording ===== */}
@@ -194,8 +199,14 @@ export default function Invitation({ ev }) {
         <h2 className="sec-title reveal"><span className="script gold-text">Where</span></h2>
         <div className={`venues ${ev.venues.length > 1 ? "two" : ""}`}>
           {ev.venues.map((v) => (
-            <div key={v.name} className="venue reveal">
-              <p className="caps small">{v.label}</p>
+            <div key={v.name} className={`venue reveal ${v.image ? "has-img" : ""}`}>
+              {v.image && (
+                <div className="venue-img">
+                  <img src={v.image} alt={v.name} loading="lazy" />
+                  <span>{v.label}</span>
+                </div>
+              )}
+              {!v.image && <p className="caps small">{v.label}</p>}
               <h3>{v.name}</h3>
               <p className="addr">{v.address}</p>
               <p className="vtime">{v.time}</p>
