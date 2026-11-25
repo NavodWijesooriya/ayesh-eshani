@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-// Admin panel lives on its own domain (e.g. ayesh-eshani-admin.vercel.app).
-// Set ADMIN_HOST in Vercel → Settings → Environment Variables to turn this on.
-// Until it is set, /admin keeps working on every domain (and always on localhost).
-const ADMIN_HOST = (process.env.ADMIN_HOST || "").toLowerCase();
+// The admin panel lives on its own domain. ADMIN_HOST (Vercel env var) can override it.
+// /admin always keeps working on localhost for development.
+const ADMIN_HOST = (process.env.ADMIN_HOST || "ayesh-eshani-admin.vercel.app").toLowerCase();
 
 export function middleware(req) {
   if (!ADMIN_HOST) return NextResponse.next();
