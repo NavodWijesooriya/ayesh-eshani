@@ -484,6 +484,17 @@ button { font: inherit; cursor: pointer; }
 .admin .day-pick button small { color: var(--mut); font-size: .8rem; font-weight: 400; }
 .admin .day-pick button.on { border-color: var(--acc); background: var(--acc-soft); color: var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
 .admin .day-pick button.on small { color: var(--acc); }
+.msg-label { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .9rem; font-size: .88rem; font-weight: 500; }
+.msg-label em { font-style: normal; font-weight: 400; color: var(--mut); }
+.msg-label b { color: var(--acc); font-weight: 600; }
+.admin textarea {
+  font: inherit; font-size: .95rem; line-height: 1.5; padding: .7rem .85rem; background: #fff; color: var(--ink);
+  border: 1px solid #ddd6d3; border-radius: 8px; outline: none; resize: vertical; transition: .15s;
+}
+.admin textarea:focus { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(142,31,44,.12); }
+.msg-preview { margin-bottom: 1rem; padding: .8rem 1rem; background: #e7f6e9; border: 1px solid #cdebd2; border-radius: 10px 10px 10px 2px; max-width: 560px; }
+.msg-preview small { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #3c7a48; margin-bottom: .35rem; }
+.msg-preview p { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: .92rem; line-height: 1.5; color: #1d2b20; }
 .link-out { display: block; padding: .65rem .85rem; margin-bottom: 1rem; background: var(--acc-soft); border: 1px dashed var(--acc-line); border-radius: 8px; word-break: break-all; color: var(--acc); font-size: .85rem; }
 
 @media (max-width: 640px) {

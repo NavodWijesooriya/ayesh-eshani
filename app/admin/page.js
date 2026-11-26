@@ -5,6 +5,20 @@ import { collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc } from "
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth, db, RSVPS } from "@/lib/firebase";
 
+const DEFAULT_TPL = {
+  day1: "Dear {name},\nWith joy we invite you to our wedding on Saturday, 09 January 2027 💍\nPlease open your invitation & RSVP here:\n{link}\n\n— Ayesh & Eshani",
+  day2: "Dear {name},\nWith joy we invite you to our wedding celebration on Sunday, 10 January 2027 💍\nPlease open your invitation & RSVP here:\n{link}\n\n— Ayesh & Eshani",
+};
+
+// {name} and {link} are filled in automatically. Lines with {name} are dropped when no name is typed.
+function buildMessage(tpl, name, link) {
+  let lines = tpl.split("\n");
+  if (!name) lines = lines.filter((l) => !l.includes("{name}"));
+  let msg = lines.join("\n").replaceAll("{name}", name).replaceAll("{link}", link);
+  if (!tpl.includes("{link}")) msg = `${msg.trim()}\n${link}`;
+  return msg;
+}
+
 const LABEL = { day1: "Day 1 · Church (09 Jan)", day2: "Day 2 · Celebration (10 Jan)" };
 
 export default function Admin() {
@@ -19,6 +33,17 @@ export default function Admin() {
   const [q, setQ] = useState("");
   const [inviteName, setInviteName] = useState("");
   const [inviteDay, setInviteDay] = useState("day1");
+  const [tpls, setTpls] = useState(DEFAULT_TPL);
+  const [copiedMsg, setCopiedMsg] = useState(false);
+
+  useEffect(() => {
+    try { const t = JSON.parse(localStorage.getItem("ae-wa-tpl") || "null"); if (t?.day1 && t?.day2) setTpls(t); } catch {}
+  }, []);
+  const setTpl = (v) => {
+    const next = { ...tpls, [inviteDay]: v };
+    setTpls(next);
+    try { localStorage.setItem("ae-wa-tpl", JSON.stringify(next)); } catch {}
+  };
   const [copied, setCopied] = useState(false);
 
   useEffect(() => onAuthStateChanged(auth, setUser), []);
@@ -96,9 +121,8 @@ export default function Admin() {
     typeof window === "undefined" ? "" :
     ["localhost", "127.0.0.1"].includes(window.location.hostname) ? window.location.origin : SITE_URL;
   const inviteUrl = `${origin}/${inviteDay}${inviteName.trim() ? `?to=${encodeURIComponent(inviteName.trim())}` : ""}`;
-  const waText = encodeURIComponent(
-    `${inviteName.trim() ? `Dear ${inviteName.trim()},\n` : ""}With joy we invite you to our wedding ${inviteDay === "day1" ? "on Saturday, 09 January 2027" : "celebration on Sunday, 10 January 2027"} 💍\nPlease open your invitation & RSVP here:\n${inviteUrl}\n\n— Ayesh & Eshani`
-  );
+  const message = buildMessage(tpls[inviteDay], inviteName.trim(), inviteUrl);
+  const waText = encodeURIComponent(message);
 
   if (user === undefined) return <main className="admin login-wrap"><p className="a-sub">Loading…</p></main>;
 
@@ -219,10 +243,22 @@ export default function Admin() {
           <input placeholder="e.g. Mr. & Mrs. Perera" value={inviteName} onChange={(e) => setInviteName(e.target.value)} />
         </div>
         <code className="link-out">{inviteUrl}</code>
+        <label className="msg-label">
+          <span>WhatsApp message <em>— use <b>{"{name}"}</b> for the guest's name and <b>{"{link}"}</b> for the invitation link</em></span>
+          <textarea rows={7} value={tpls[inviteDay]} onChange={(e) => setTpl(e.target.value)} />
+        </label>
+        <div className="msg-preview">
+          <small>Preview</small>
+          <p>{message}</p>
+        </div>
         <div className="a-head-btns">
           <button onClick={() => { navigator.clipboard?.writeText(inviteUrl); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>
             {copied ? "Copied" : "Copy link"}
           </button>
+          <button onClick={() => { navigator.clipboard?.writeText(message); setCopiedMsg(true); setTimeout(() => setCopiedMsg(false), 1500); }}>
+            {copiedMsg ? "Copied" : "Copy message"}
+          </button>
+          <button onClick={() => setTpl(DEFAULT_TPL[inviteDay])}>Reset message</button>
           <a className="primary" href={`https://wa.me/?text=${waText}`} target="_blank" rel="noreferrer">Share on WhatsApp</a>
           <a href={inviteUrl} target="_blank" rel="noreferrer">Preview</a>
         </div>
